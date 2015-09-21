@@ -19,3 +19,36 @@ In many metaprogramming frameworks, full semantic information about the program 
 One of the key innovations of scala.meta is the introduction of AST persistence that mandates saving typechecked abstract syntax trees into binaries produced by the compiler. Our scalac plugin saves scala.meta trees of the programs being compiled into resulting .class files and provides a way to load these trees back for inspection. See [#147](https://github.com/scalameta/scalameta/issues/147) to learn more about our serialization format and its compatibility with TASTY.
 
 With the introduction of AST persistence, the restrictions on program introspection are lifted, and the distinction between compile-time and runtime metaprogramming becomes obsolete.
+
+### Configuring the build system
+
+We will be using a two-project configuration that consists of `scrutinee`, a project under inspection, and `explorer`, a scala.meta-based tool that loads semantic information from the classpath of `scrutinee`. A bit below, you can find relevant excerpts of the build file, and here's the highlight of the most important points:
+
+  1. To serialize ASTs of your projects:
+    1. Use the `"org.scalameta" %% "scalahost" % "..."` compiler plugin.
+    1. Specify the `-Ybackend:GenBCode` compiler option (this is necessary for Scala 2.11.7, but we hope to lift this restriction in Scala 2.11.8).
+  1. To deserialize ASTs of your projects:
+    1. Reference `"org.scalameta" %% "scalahost" % "..."` as a library.
+    1. Obtain a mandatory classpath (because trees are serialized into class files) and an optional sourcepath (because we only serialize semantics of the code, not its surface syntax). You can take a look at build.sbt to see how we're doing this, but feel free to obtain this configuration however you see fit.
+    1. Create a context from a classpath and a sourcepath and use its functionality as described in the later sections of this guide.
+
+```scala
+lazy val scrutinee = Project(
+  id = "scrutinee",
+  base = file("scrutinee")
+) settings (
+  sharedSettings: _*
+) settings (
+  addCompilerPlugin("org.scalameta" % "scalahost" % "..." cross CrossVersion.full),
+  scalacOptions += "-Ybackend:GenBCode"
+)
+
+lazy val explorer = Project(
+  id = "explorer",
+  base = file("explorer")
+) settings (
+  sharedSettings: _*
+) settings (
+  libraryDependencies += "org.scalameta" % "scalahost" % "..." cross CrossVersion.full
+)
+```
