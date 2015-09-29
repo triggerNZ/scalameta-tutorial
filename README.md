@@ -76,7 +76,7 @@ object Test {
 
 ### Loading serialized trees
 
-Given that your classpath has been compiled with the `scalahost` compiler plugin (which saves attributed ASTs into the resulting classfiles), and that you have successfully instantiated a context, loading scala.meta trees that correspond to the classpath is as writing `c.sources`:
+Given that your classpath has been compiled with the `scalahost` compiler plugin (which saves attributed ASTs into the resulting classfiles), and that you have successfully instantiated a context, loading scala.meta trees that correspond to the classpath is as easy as writing `c.sources`:
 
 ```scala
 c.sources.foreach(println)
@@ -97,4 +97,31 @@ class Foo extends Bar {
   def bar(a: Int) = a
 }
 
+```
+
+Note that we don't serialize formatting and comments in order to save space, so, when instantiating a context, it is necessary to specify a sourcepath that points to the original sources. If we didn't have sources, we'd have to settle for an approximation of the original code - guaranteedly semantically equivalent, but most likely syntactically different:
+
+```diff
+diff --git a/explorer/src/main/scala/Test.scala b/explorer/src/main/scala/Test.scala
+index 8ddf4c88f9..9db2fcaf0b 100644
+--- a/explorer/src/main/scala/Test.scala
++++ b/explorer/src/main/scala/Test.scala
+@@ -5,7 +5,7 @@ object Test {
+   def main(args: Array[String]): Unit = {
+     val classpath = sys.props("sbt.paths.scrutinee.classes")
+     val sourcepath = sys.props("sbt.paths.scrutinee.sources")
+-    implicit val c = Context(Artifact(classpath, sourcepath))
++    implicit val c = Context(Artifact(classpath))
+     c.sources.foreach(println)
+   }
+```
+
+```
+12:48 ~/Projects/tutorial (exploring-semantics)$ sbt run
+[info] Set current project to tutorial (in build file:~/Projects/tutorial/)
+[info] Set current project to root (in build file:~/Projects/tutorial/)
+[info] Compiling 1 Scala source to ~/Projects/tutorial/explorer/target/scala-2.11/classes...
+[info] Running Test
+class Foo extends Bar { def bar(a: Int) = a }
+class Bar
 ```
