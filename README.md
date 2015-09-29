@@ -155,3 +155,42 @@ object Test {
 [info] Running Test
 true
 ```
+
+### Minding hygiene
+
+It is important to note that our current implementation of quasiquotes is unhygienic - names are hardcoded to be resolved at the top level of the context at hand. You can follow [#156](https://github.com/scalameta/scalameta/issues/156) to keep track of our progress in that area or to suggest your ideas.
+
+Even though our quasiquotes are unhygienic, they are not unsound. If you make a typo in a quasiquoted name, semantic operations with such quasiquotes aren't going to silently fail, but will loudly crash, albeit at runtime.
+
+```diff
+diff --git a/explorer/src/main/scala/Test.scala b/explorer/src/main/scala/Test.scala
+index 12bca83971..bb4be95486 100644
+--- a/explorer/src/main/scala/Test.scala
++++ b/explorer/src/main/scala/Test.scala
+@@ -7,6 +7,6 @@ object Test {
+     val sourcepath = sys.props("sbt.paths.scrutinee.sources")
+     implicit val c = Context(Artifact(classpath, sourcepath))
+-    println(t"Foo" <:< t"Bar")
++    println(t"Foo2" <:< t"Bar")
+   }
+ }
+```
+
+```
+13:41 ~/Projects/tutorial (exploring-semantics)$ sbt run
+[info] Set current project to tutorial (in build file:/Users/xeno_by/Projects/tutorial/)
+[info] Set current project to root (in build file:/Users/xeno_by/Projects/tutorial/)
+[info] Compiling 1 Scala source to /Users/xeno_by/Projects/tutorial/explorer/target/scala-2.11/classes...
+[info] Running Test
+Exception in thread "main" not found: type Foo2
+Foo2
+  at scala.meta.internal.hosts.scalac.contexts.Proxy.convertingTypecheck$1(Proxy.scala:75)
+  at scala.meta.internal.hosts.scalac.contexts.Proxy.loop$1(Proxy.scala:90)
+  at scala.meta.internal.hosts.scalac.contexts.Proxy.typecheck(Proxy.scala:115)
+  at scala.meta.internal.hosts.scalac.contexts.Proxy.isSubtype(Proxy.scala:162)
+  at scala.meta.semantic.Api$XtensionSemanticType.$less$colon$less(Api.scala:164)
+  at Test$.main(Test.scala:10)
+  at Test.main(Test.scala)
+java.lang.RuntimeException: Nonzero exit code returned from runner: 1
+  at scala.sys.package$.error(package.scala:27)
+```
