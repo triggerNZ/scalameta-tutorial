@@ -125,3 +125,33 @@ index 8ddf4c88f9..9db2fcaf0b 100644
 class Foo extends Bar { def bar(a: Int) = a }
 class Bar
 ```
+
+### Going further
+
+Similarly to scala.reflect, we provide APIs to go from references to definitions, to list members of types, to compute relations between types and so on.
+
+However, unlike with syntactic APIs, our semantic story is far from being finished. While basic stuff should work, we didn't have much time to test and support real-life scenarios. We also don't yet have well-organized scaladocs, so the only good source of information about semantic APIs is source code: [semantic/Api.scala](https://github.com/scalameta/scalameta/blob/master/scalameta/semantic/src/main/scala/scala/meta/semantic/Api.scala).
+
+While we're working on implementation and documentation of semantic APIs, let us entertain you with a simple example that shows a glimpse of what should be possible in the 0.1 release. In the snippet below, we use type quasiquotes `t"..."` to create references to the types defined in the context and then call `Type.<:<` to figure out the subtyping relationship.
+
+```scala
+import scala.meta._
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val classpath = sys.props("sbt.paths.scrutinee.classes")
+    val sourcepath = sys.props("sbt.paths.scrutinee.sources")
+    implicit val c = Context(Artifact(classpath, sourcepath))
+    println(t"Foo" <:< t"Bar")
+  }
+}
+```
+
+```
+13:27 ~/Projects/tutorial (exploring-semantics)$ sbt run
+[info] Set current project to tutorial (in build file:~/Projects/tutorial/)
+[info] Set current project to root (in build file:~/Projects/tutorial/)
+[info] Compiling 1 Scala source to ~/Projects/tutorial/explorer/target/scala-2.11/classes...
+[info] Running Test
+true
+```
