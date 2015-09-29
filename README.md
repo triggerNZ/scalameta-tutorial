@@ -73,3 +73,28 @@ object Test {
   }
 }
 ```
+
+### Loading serialized trees
+
+Given that your classpath has been compiled with the `scalahost` compiler plugin (which saves attributed ASTs into the resulting classfiles), and that you have successfully instantiated a context, loading scala.meta trees that correspond to the classpath is as writing `c.sources`:
+
+```scala
+c.sources.foreach(println)
+```
+
+```
+11:44 ~/Projects/tutorial (exploring-semantics)$ sbt run
+[info] Set current project to tutorial (in build file:~/Projects/tutorial/)
+[info] Set current project to root (in build file:~/Projects/tutorial/)
+[info] Running Test
+/** scaladoc for bar */
+class Bar
+
+/**
+ * Scaladoc for Foo class
+ */
+class Foo extends Bar {
+  def bar(a: Int) = a
+}
+
+```
