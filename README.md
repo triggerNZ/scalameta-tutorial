@@ -52,3 +52,24 @@ lazy val explorer = Project(
   libraryDependencies += "org.scalameta" % "scalahost" % "..." cross CrossVersion.full
 )
 ```
+
+### Setting up imports
+
+Much like in the [view-bounds guide](https://github.com/scalameta/tutorial/tree/view-bounds), environment setup is more or less simple. First, we need to specify one wildcard import, and then we need to create a context (the latter is an additional step in comparison with view-bounds, and it might be somewhat challenging).
+
+1) `import scala.meta._` not only brings all the platform-independent APIs in scope (as explained in view-bounds), but also imports platform-specific implementations of those APIs provided by scalahost.
+
+2) `implicit val c = Context(Artifact(classpath, sourcepath))` creates an implicit context that provides a scalac-based implementation of platform-independent semantic services defined in scala.meta. All semantic APIs of scala.meta take a context as an implicit parameter, so it's really central to the whole business.
+
+```scala
+import scala.meta._
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val classpath = sys.props("sbt.paths.scrutinee.classes")
+    val sourcepath = sys.props("sbt.paths.scrutinee.sources")
+    implicit val c = Context(Artifact(classpath, sourcepath))
+    ???
+  }
+}
+```
