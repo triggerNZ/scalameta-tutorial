@@ -33,3 +33,12 @@
   * Rewriting view bounds ([/tree/view-bounds](https://github.com/scalameta/tutorial/tree/view-bounds))
   * Exploring semantics ([/tree/exploring-semantics](https://github.com/scalameta/tutorial/tree/exploring-semantics))
   * Advanced dendrology ([/tree/advanced-dendrology](https://github.com/scalameta/tutorial/tree/advanced-dendrology))
+   
+
+### SBT instructions
+
+To get started with scalameta, add the following to your `build.sbt`:
+
+```
+libraryDependencies +=  "org.scalameta" %% "scalameta" % "0.1.0-M0"
+```
